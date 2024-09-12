@@ -10,8 +10,22 @@ class TodosController < ApplicationController
   end
   # GET /todos or /todos.json
   def index
-    Rails.logger.info 'Index view accessed'
-    @todos = Todo.where(status: params[:status].presence || 'incomplete')  
+    if params[:member_id].present?
+      @member = Member.find(params[:member_id])
+      @todos = @member.todos.includes(:member)
+    else
+      # If no member is selected, just filter by status
+      @todos = Todo.includes(:member)
+      @todos = @todos.where(status: params[:status].presence || 'incomplete')
+      @member = Member.all
+    end
+  
+    # Filter todos by status if provided
+    if params[:status].present?
+      @todos = @todos.where(status: params[:status])
+    else
+      @todos = @todos.where(status: 'incomplete') unless @todos.nil? # Default to 'incomplete' if no status is provided
+    end
   end
 
   # GET /todos/1 or /todos/1.json
@@ -88,6 +102,6 @@ class TodosController < ApplicationController
 
     # Only allow a list of trusted parameters through.
     def todo_params
-      params.require(:todo).permit(:name, :status, :due_date)
+      params.require(:todo).permit(:name, :status, :due_date, :member_id)
     end
 end

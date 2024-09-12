@@ -8,7 +8,7 @@
         <li>
           <%= link_to "Incomplete",
             todos_path(status: "incomplete"),
-            class: "inline-block pb-2 px-4 text-sm font-medium text-center text-gray-500 border-b-2 hover:text-gray-600 border-b-2 #{ params[:status] != "complete" ? 'border-blue-600' : 'border-transparent hover:border-gray-300'}"
+            class: "inline-block pb-2 px-4 text-sm font-medium text-center text-gray-500 border-b-2 hover:text-gray-600 border-b-2 #{ params[:status] != "complete" && !params[:member_id] ? 'border-blue-600' : 'border-transparent hover:border-gray-300'}"
           %>
         </li>
         <li>
@@ -17,16 +17,48 @@
             class: "inline-block pb-2 px-4 text-sm font-medium text-center text-gray-500 border-b-2 hover:text-gray-600 border-b-2 #{ params[:status] == "complete" ? 'border-blue-600' : 'border-transparent hover:border-gray-300'}"
           %>
         </li>
+        <li>
+          <%= link_to "Members",
+            todos_path(show_members: true),
+            class: "inline-block pb-2 px-4 text-sm font-medium text-center text-gray-500 border-b-2 hover:text-gray-600 border-b-2 #{ params[:show_members] ? 'border-blue-600' : 'border-transparent hover:border-gray-300'}"
+          %>
+        </li>
       </ul>          
     </div>
 
-    <% unless params[:status] == "complete" %>
-      <div class="py-2 px-4">
-        <%= render "form", todo: Todo.new %>
+    <% if params[:show_members] %>
+      <div class="mt-4">
+        <h3 class="text-lg font-semibold mb-2">Members</h3>
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50 ">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Todo Count</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <% @member.each do |member| %>
+              <tr>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <%= link_to member.name, todos_path(member_id: member.id), class: "text-blue-600 hover:underline px-6 py-3 text-left text-xs tracking-wider" %>
+                </td>
+                <td class="px-6 py-4 whitespace-nowrap text-left text-xs tracking-wider">
+                  <%= member.todos.count %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
       </div>
+    <% else %>
+      <% unless params[:status] == "complete" %>
+        <div class="py-2 px-4">
+          <%= render "form", todo: Todo.new %>
+        </div>
+      <% end %>
+      <ul id="todos-list">
+        <%= render @todos %>
+      </ul>
     <% end %>
-    <ul id="todos-list">
-      <%= render @todos %>
-    </ul>
   <% end %>
 </div>
